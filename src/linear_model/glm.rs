@@ -60,10 +60,31 @@ impl LinearModel {
     }
 
     /// Train linear model with gradient descent. Unlike `fit` function,
-    /// this method required iteration epochs to obtain 
-    /// optimal weights.
-    pub fn train(&mut self, x_val: &DMatrix<f64>, y_val: &DVector<f64>) {
+    /// this method required to loop through a given number of iterations 
+    /// to obtain the optimal weights.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `x_val` - parameters of shape 
+    /// 
+    /// * `lr` - learning rate, view as the step size of gradient descent.
+    pub fn train(
+        &mut self, 
+        x_val: &DMatrix<f64>, 
+        y_val: &DVector<f64>, 
+        epochs: usize,
+        lr: f64,
+    ) {
+        let mut thetas = DVector::from_row_slice(&vec![0f64; x_val.ncols()]);
 
+        for _ in 0..epochs {
+            let residuals_mtx = x_val.tr_mul(&thetas) - y_val;
+            let rss = residuals_mtx.sum();
+
+            thetas.add_scalar_mut(-lr / (x_val.nrows() as f64) * rss);
+        }
+
+        self.w = Some(thetas);
     }
 
 }
