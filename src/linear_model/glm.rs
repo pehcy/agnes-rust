@@ -12,6 +12,7 @@ use std::ops::Mul;
 #[derive(Debug)]
 pub struct LinearModel {
     w: Option<DVector<f64>>,
+    fit_intercept: bool,
 }
 
 pub struct AnovaTest {
@@ -20,9 +21,10 @@ pub struct AnovaTest {
 }
 
 impl LinearModel {
-    pub fn new() -> LinearModel {
+    pub fn new(fit_intercept: bool) -> LinearModel {
         LinearModel {
-            w: None
+            w: None,
+            fit_intercept,
         }
     }
 
@@ -32,8 +34,13 @@ impl LinearModel {
     /// 
     /// * `x_val` - parameters of shape 
     pub fn fit(&mut self, x_val: &DMatrix<f64>, y_val: &DVector<f64>) {
-        let x_val = x_val.clone().insert_column(0, 1.0);
-        self._fit(&x_val, y_val);
+        if self.fit_intercept {
+            let x_val = x_val.clone().insert_column(0, 1.0);
+            self._fit(&x_val, y_val);
+        }
+        else {
+            self._fit(x_val, y_val);
+        }
     }
 
     fn _fit(&mut self, x_val: &DMatrix<f64>, y_val: &DVector<f64>) {
@@ -55,8 +62,11 @@ impl LinearModel {
         if !self.w.is_some() {
             return Err("Data input is unable to be fitted.".to_string());
         }
-
-        Ok(self.w.as_ref().unwrap()[0])
+        if self.fit_intercept {
+            return Ok(self.w.as_ref().unwrap()[0]);
+        }
+        
+        return Err("Model was not fitted with intercept.".to_string());
     }
 
     /// Train linear model with gradient descent. Unlike `fit` function,
@@ -77,11 +87,12 @@ impl LinearModel {
     ) {
         let mut thetas = DVector::from_row_slice(&vec![0f64; x_val.ncols()]);
 
-        for _ in 0..epochs {
-            let residuals_mtx = x_val.tr_mul(&thetas) - y_val;
-            let rss = residuals_mtx.sum();
+        for i in 0..epochs {
+            let costs_mtx = x_val.mul(&thetas) - y_val;
+            let cost_total = costs_mtx.sum();
 
-            thetas.add_scalar_mut(-lr / (x_val.nrows() as f64) * rss);
+            thetas.add_scalar_mut(-lr / (x_val.nrows() as f64) * cost_total);
+            println!("Iteration {}", i);
         }
 
         self.w = Some(thetas);
