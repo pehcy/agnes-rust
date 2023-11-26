@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 use na::{DMatrix, DVector};
-use std::ops::{Mul, Add};
+use std::ops::Mul;
 
 /// Linear Regression model
 /// 
@@ -81,25 +81,18 @@ impl LinearModel {
     pub fn train(
         &mut self, 
         x_val: &DMatrix<f64>, 
-        y_val: &DVector<f64>, 
+        y_val: &DVector<f64>,
+        w: &DVector<f64>,
+        b: f64,
         epochs: usize,
         lr: f64,
     ) {
         let mut dj_dw = DVector::from_row_slice(&vec![0f64; x_val.ncols()]);
         let mut dj_db = 0f64;
-        let mut w_init = DVector::from_row_slice(&vec![0.39133535, 18.75376741, -53.36032453, -26.42131618]);
-        let mut b_init = 785.1811367994083;
         
         for i in 0..x_val.nrows() {
-            let err_rate = x_val.row(i).dot(&w_init.transpose()) + b_init - y_val[(i,0)];
-            //for (j, mut row) in dj_dw.row_iter().enumerate() {
-            //    row = row.add_scalar(1);
-            //}
+            let err_rate = x_val.row(i).dot(&w.transpose()) + b - y_val[(i,0)];
             dj_dw = dj_dw + x_val.row(i).transpose() * err_rate;
-
-            //dj_dw = dj_dw.iter_mut().enumerate().map(|(j, &mut x)| x + err_rate * x_val[(i, j)]);
-            
-            // dj_dw.into_iter().map(|(j, &x as f64)| x + err_rate * x_val[(i, j)]);
             dj_db = dj_db + err_rate;
         }
 
