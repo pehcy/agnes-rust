@@ -35,8 +35,8 @@ mod tests {
         let mut model = LinearModel::new(true);
 
         // initial weights, initial biased
-        let mut w_init = DVector::from_row_slice(&vec![0.39133535, 18.75376741, -53.36032453, -26.42131618]);
-        let mut b_init: f64 = 785.1811367994083;
+        let w_init = DVector::from_row_slice(&vec![0.39133535, 18.75376741, -53.36032453, -26.42131618]);
+        let b_init: f64 = 785.1811367994083;
 
         model.train(&x_val, &y_val, &w_init, b_init, 100, 0.005);
         let w_final = model

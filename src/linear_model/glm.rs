@@ -15,9 +15,13 @@ pub struct LinearModel {
     fit_intercept: bool,
 }
 
+pub enum AnovaTestKind {
+    OneTailed,
+    TwoTailed,
+}
+
 pub struct AnovaTest {
-    sres: f64,
-    tts: f64,
+    model: LinearModel,
 }
 
 impl LinearModel {
@@ -98,19 +102,35 @@ impl LinearModel {
 
         dj_dw /= x_val.nrows() as f64;
         dj_db /= x_val.nrows() as f64;
-            
-            //let err_rate = x_val.mul(&w_init).add_scalar(b_init) - y_val;
-            //dj_dw = dj_dw + x_val
-            
-            /*
-            let costs_mtx = x_val.mul(&thetas) - y_val;
-            let cost_total = costs_mtx.sum();
-
-            thetas.add_scalar_mut(-lr / (x_val.nrows() as f64) * cost_total);
-            println!("Iteration {}", i);
-            */
 
         self.w = Some(dj_dw);
     }
 
+}
+
+impl AnovaTest {
+    /// Implementation of R-like ANOVA test summary.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `test_style` - choose either one-tailed or two-tailed F-test.
+    /// 
+    /// <div class="warning">The model must be fitted linear regression model.
+    /// Any unfitted model or non-linear regression model will yield to 
+    /// incorrect summary.
+    /// </div>
+    fn summary(&self, test_style: AnovaTestKind) -> String {
+        let summary_docstr = r#"
+        |          |Df  |Sum Sq  |Mean Sq |F value |Pr(>F)     |
+        |----------|----|--------|--------|--------|-----------|
+        |Species   |  2 |52473   |   26237|   594.8| <2e-16 ***|
+        |Residuals |339 |14953   |      44|        |           |
+        |------------------------------------------------------|
+
+        Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+        2 observations are removed due to missing values.
+        "#;
+
+        summary_docstr.to_string()
+    }
 }
