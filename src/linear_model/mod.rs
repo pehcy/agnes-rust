@@ -46,7 +46,7 @@ mod tests {
                         .data
                         .as_vec();
         
-        let margin = vec![-0.0027262357719640327f64, -6.271972627776752e-6_f64, -2.217455782253334e-6_f64, -6.92403390682254e-5_f64];
+        let margin = vec![-0.0027262357719640327_f64, -6.271972627776752e-6_f64, -2.217455782253334e-6_f64, -6.92403390682254e-5_f64];
 
         println!("Weights: {:?}", w_final);
         assert_eq!(vec_compare(w_final, &margin), true);
